@@ -53,7 +53,6 @@ static int process_stream(FILE *fp, const char *name, const GrepOptions *opts, i
         }
 
         if (c == '\r') {
-            /* Normalize CRLF to LF: skip CR, handle LF in next iteration */
             continue;
         }
 
@@ -80,7 +79,7 @@ static int process_stream(FILE *fp, const char *name, const GrepOptions *opts, i
     }
 
     free(buffer);
-    return matched_any ? 0 : 1; /* Return 1 if no matches, like grep */
+    return matched_any ? 0 : 1; 
 }
 
 int main(int argc, char **argv) {

@@ -29,7 +29,7 @@ static int process_stream(FILE *fp, const char *name, const CatOptions *opts) {
                 should_number = 1;
             }
             if (should_number) {
-                /* Match common cat format: 6-width, tab after number */
+                
                 fprintf(stdout, "%6lld\t", line_no);
                 line_no++;
             }
@@ -68,7 +68,6 @@ int main(int argc, char **argv) {
             continue;
         }
         if (!end_of_options && arg[0] == '-' && arg[1] != '\0') {
-            /* Parse stacked short options like -nE */
             for (int j = 1; arg[j] != '\0'; ++j) {
                 char f = arg[j];
                 if (f == 'n') {
@@ -84,11 +83,11 @@ int main(int argc, char **argv) {
                 }
             }
         } else {
-            break; /* first non-option is a file */
+            break; 
         }
     }
 
-    /* If both -b and -n are set, mimic GNU cat: -b overrides -n */
+    
     if (opts.number_nonblank) {
         opts.number_all_lines = 0;
     }
@@ -96,7 +95,6 @@ int main(int argc, char **argv) {
     int exit_code = 0;
 
     if (i >= argc) {
-        /* No files: read from stdin */
         int rc = process_stream(stdin, "-", &opts);
         if (rc != 0) exit_code = rc;
         return exit_code;
