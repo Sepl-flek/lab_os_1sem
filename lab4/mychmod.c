@@ -1,6 +1,4 @@
 // mychmod.c
-// Простейшая реализация chmod-подобной утилиты (символьные и октальные режимы).
-// Компиляция: gcc -Wall -Wextra -o mychmod mychmod.c
 
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>
