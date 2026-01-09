@@ -14,4 +14,3 @@ clean:
 
 fclean: clean
         rm -f /tmp/sender.lock
-
