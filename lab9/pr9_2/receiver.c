@@ -4,9 +4,13 @@
 #include <sys/sem.h>
 #include <unistd.h>
 #include <time.h>
+#include <signal.h>
 
 #define SHM_SIZE 128
 #define KEY 0x1234
+
+int shmid, semid;
+char* shm;
 
 void sem_lock(int semid) {
     struct sembuf sb = {0, -1, 0};
@@ -18,11 +22,20 @@ void sem_unlock(int semid) {
     semop(semid, &sb, 1);
 }
 
-int main() {
-    int shmid = shmget(KEY, SHM_SIZE, 0666);
-    int semid = semget(KEY, 1, 0666);
+void cleanup(int sig) {
+    shmdt(shm);
+    printf("\nReceiver: detached from shared memory\n");
+    _exit(0);
+}
 
-    char* shm = (char*)shmat(shmid, NULL, 0);
+int main() {
+    shmid = shmget(KEY, SHM_SIZE, 0666);
+    semid = semget(KEY, 1, 0666);
+
+    shm = (char*)shmat(shmid, NULL, 0);
+
+    signal(SIGINT, cleanup);
+    signal(SIGTERM, cleanup);
 
     while (1) {
         time_t now = time(NULL);

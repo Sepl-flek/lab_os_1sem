@@ -11,6 +11,7 @@ char shared_buffer[BUFFER_SIZE];
 int counter = 0;
 
 pthread_rwlock_t rwlock;
+volatile int running = 1;
 
 /* Пишущий поток */
 void* writer_thread(void* arg) {
@@ -18,7 +19,8 @@ void* writer_thread(void* arg) {
         pthread_rwlock_wrlock(&rwlock);
 
         counter++;
-        snprintf(shared_buffer, BUFFER_SIZE, "Запись № %d", counter);
+        snprintf(shared_buffer, BUFFER_SIZE,
+                 "Запись № %d", counter);
 
         pthread_rwlock_unlock(&rwlock);
 
@@ -31,7 +33,7 @@ void* writer_thread(void* arg) {
 void* reader_thread(void* arg) {
     long tid = (long)arg;
 
-    while (1) {
+    while (running) {
         pthread_rwlock_rdlock(&rwlock);
 
         printf("Reader tid=%ld | buffer: \"%s\"\n",
@@ -48,19 +50,31 @@ int main() {
     pthread_t writer;
     pthread_t readers[READERS_COUNT];
 
+    /* Инициализация */
     pthread_rwlock_init(&rwlock, NULL);
     strcpy(shared_buffer, "Пусто");
 
+    /* Создание потоков */
     pthread_create(&writer, NULL, writer_thread, NULL);
 
     for (long i = 0; i < READERS_COUNT; i++) {
-        pthread_create(&readers[i], NULL, reader_thread, (void*)i);
+        pthread_create(&readers[i], NULL,
+                       reader_thread, (void*)i);
     }
 
+    /* Ожидание завершения writer */
     pthread_join(writer, NULL);
 
-    printf("\nWriter завершил работу. Программа завершается.\n");
+    /* Корректное завершение reader-потоков */
+    running = 0;
 
+    for (int i = 0; i < READERS_COUNT; i++) {
+        pthread_join(readers[i], NULL);
+    }
+
+    /* Освобождение ресурсов */
     pthread_rwlock_destroy(&rwlock);
+
+    printf("\nВсе потоки корректно завершены.\n");
     return 0;
 }
